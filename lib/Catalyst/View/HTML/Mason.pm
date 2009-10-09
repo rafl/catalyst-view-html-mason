@@ -106,7 +106,7 @@ sub render {
 sub process {
     my ($self, $ctx) = @_;
 
-    my $comp   = $self->get_component($ctx);
+    my $comp   = $self->_get_component($ctx);
     my $output = $self->render($ctx, $comp);
 
     $ctx->response->body($output);
