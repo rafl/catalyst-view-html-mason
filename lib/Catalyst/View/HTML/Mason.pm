@@ -9,6 +9,7 @@ extends 'Catalyst::View';
 
 has interp => (
     is      => 'ro',
+    lazy    => 1,
     builder => '_build_interp',
 );
 
@@ -58,10 +59,10 @@ sub render {
 
     try {
         $self->interp->make_request(
-            comp => $self->fetch_comp($comp),
-            args => $args ? $args : $ctx->stash,
+            comp => $self->load_component($comp),
+            args => [$args ? %{ $args } : %{ $ctx->stash }],
             out_method => \$output,
-        );
+        )->exec;
     }
     catch {
         confess $_;
@@ -73,7 +74,7 @@ sub render {
 sub process {
     my ($self, $ctx) = @_;
 
-    my $comp   = $self->load_component($self->get_component($ctx));
+    my $comp   = $self->get_component($ctx);
     my $output = $self->render($ctx, $comp);
 
     $ctx->response->body($output);
@@ -105,7 +106,13 @@ sub load_component {
     ($comp, $method) = @{ $comp }
         if ref $comp && ref $comp eq 'ARRAY';
 
+    $comp = "/$comp"
+        unless $comp =~ m{^/};
+
     my $component = $self->interp->load($comp);
+    confess "Can't find component for path $comp"
+        unless $component;
+
     $component = $component->methods($method)
         if defined $method;
 
