@@ -1,4 +1,4 @@
-package TestApp::Controller::Root;
+package TestAppEnc::Controller::Root;
 
 use Moose;
 use namespace::autoclean;

@@ -1,4 +1,4 @@
-package TestApp::View::Mason;
+package TestAppEnc::View::Mason;
 
 use Moose;
 use namespace::autoclean;
@@ -10,8 +10,9 @@ __PACKAGE__->config(
         '$affe',
         ['$ctx' => sub { $_[1] }],
     ],
+    encoding => 'UTF-8',
     interp_args => {
-        comp_root => TestApp->path_to('root')->stringify,
+        comp_root => TestAppEnc->path_to('root')->stringify,
     },
 );
 

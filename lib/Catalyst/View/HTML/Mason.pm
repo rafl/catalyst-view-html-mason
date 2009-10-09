@@ -2,8 +2,10 @@ package Catalyst::View::HTML::Mason;
 
 use Moose;
 use Try::Tiny;
-use MooseX::Types::Moose qw/ArrayRef ClassName Str Bool Object CodeRef/;
+use MooseX::Types::Moose
+    qw/ArrayRef HashRef ClassName Str Bool Object CodeRef/;
 use MooseX::Types::Structured qw/Tuple/;
+use Encode::Encoding;
 
 use namespace::autoclean;
 
@@ -31,8 +33,9 @@ has interp => (
 }
 
 has interp_args => (
-    is  => 'ro',
-    isa => ArrayRef,
+    is      => 'ro',
+    isa     => HashRef,
+    default => sub{ +{} },
 );
 
 has template_extension => (
@@ -46,6 +49,19 @@ has always_append_template_extension => (
     isa     => Bool,
     default => 0,
 );
+
+{
+
+  my $tc = subtype as 'Encode::Encoding';
+  coerce $tc, from Str, via { Encode::find_encoding( $_ ) };
+
+  has encoding => (
+    is     => 'ro',
+    isa    => $tc,
+    coerce => 1,
+  );
+
+}
 
 {
     my $glob_spec = subtype as Tuple[Str,CodeRef];
@@ -81,10 +97,20 @@ sub _build_interp_class { 'HTML::Mason::Interp' }
 
 sub _build_interp {
     my ($self) = @_;
-    return $self->interp_class->new(
-        @{ $self->interp_args || [] },
-        allow_globals => [ map{ $_->[0] } @{ $self->globals } ],
-    );
+
+    my %args = %{ $self->interp_args };
+    if ( my $enc = $self->encoding ) {
+        my $old_func = delete $args{ postprocess_text };
+        $args{ postprocess_text } = sub{
+            $old_func->( $_[0] ) if $old_func;
+            ${$_[0]} = $enc->decode( ${$_[0]} );
+        };
+    }
+
+    $args{allow_globals} ||= [];
+    unshift @{ $args{allow_globals}}, map{ $_->[0] } @{ $self->globals };
+
+    return $self->interp_class->new( %args );
 }
 
 sub render {
