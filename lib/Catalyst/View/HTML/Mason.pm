@@ -2,8 +2,9 @@ package Catalyst::View::HTML::Mason;
 
 use Moose;
 use Try::Tiny;
-use Moose::Autobox;
-use MooseX::Types::Moose qw/ArrayRef ClassName Str Bool Object/;
+use MooseX::Types::Moose qw/ArrayRef ClassName Str Bool Object CodeRef/;
+use MooseX::Types::Structured qw/Tuple/;
+
 use namespace::autoclean;
 
 extends 'Catalyst::View';
@@ -47,14 +48,20 @@ has always_append_template_extension => (
 );
 
 {
-    my $tc = subtype as ArrayRef[ArrayRef];
-    coerce $tc, from ArrayRef, via {
-        [map {
-            ref $_
-                ? $_
-                : do { my $var = substr $_, 1; [$_ => sub { $_[1]->stash->{$var} }] };
-        } @{ $_ }]
+    my $glob_spec = subtype as Tuple[Str,CodeRef];
+    coerce $glob_spec, from Str, via {
+        my ( $type, $var ) = split( qr//, $_, 2 );
+        printf STDERR "Coercing $type, $var\n", ;
+        my $fn   = {
+           '$' => sub{ $_[0] },
+           '@' => sub{ return unless defined $_[0]; @{$_[0]}},
+           '%' => sub{ return unless defined $_[0]; %{$_[0]}},
+        }->{ $type };
+        [ $_ => sub{ $fn->( $_[1]->stash->{ $var })} ];
     };
+
+    my $tc = subtype as ArrayRef[ $glob_spec ];
+    coerce $tc, from ArrayRef, via{ [ map{ $glob_spec->coerce( $_ ) } @$_ ]};
 
     has globals => (
         is      => 'ro',
@@ -77,7 +84,7 @@ sub _build_interp {
     my ($self) = @_;
     return $self->interp_class->new(
         @{ $self->interp_args || [] },
-        allow_globals => $self->globals->map(sub { $_->[0] }),
+        allow_globals => [ map{ $_->[0] } @{ $self->globals } ],
     );
 }
 
@@ -85,6 +92,8 @@ sub render {
     my ($self, $ctx, $comp, $args) = @_;
     my $output = '';
 
+    # CAVEAT: a bug in HTML::Mason::Interp will lead to a crash
+    # in set globals when array or hash globals are empty
     $self->interp->set_global(
         $_->[0] => $_->[1]->($self, $ctx),
     ) for @{ $self->globals };
@@ -131,6 +140,9 @@ sub _get_component {
 sub load_component {
     my ($self, $comp) = @_;
     my $method;
+
+    $comp = $comp->stringify
+        if blessed $comp && $comp->isa( 'Path::Class' );
 
     return $comp
         if blessed $comp;
