@@ -2,13 +2,15 @@ package Catalyst::View::HTML::Mason;
 
 use Moose;
 use Try::Tiny;
-use MooseX::Types::Moose qw/ArrayRef ClassName Str Bool/;
+use Moose::Autobox;
+use MooseX::Types::Moose qw/ArrayRef ClassName Str Bool Object/;
 use namespace::autoclean;
 
 extends 'Catalyst::View';
 
 has interp => (
     is      => 'ro',
+    isa     => Object,
     lazy    => 1,
     builder => '_build_interp',
 );
@@ -44,18 +46,48 @@ has always_append_template_extension => (
     default => 0,
 );
 
+{
+    my $tc = subtype as ArrayRef[ArrayRef];
+    coerce $tc, from ArrayRef, via {
+        [map {
+            ref $_
+                ? $_
+                : do { my $var = substr $_, 1; [$_ => sub { $_[1]->stash->{$var} }] };
+        } @{ $_ }]
+    };
+
+    has globals => (
+        is      => 'ro',
+        isa     => $tc,
+        coerce  => 1,
+        builder => '_build_globals',
+    );
+}
+
+sub BUILD {
+    my ($self) = @_;
+    $self->interp;
+}
+
+sub _build_globals { [] }
+
 sub _build_interp_class { 'HTML::Mason::Interp' }
 
 sub _build_interp {
     my ($self) = @_;
     return $self->interp_class->new(
         @{ $self->interp_args || [] },
+        allow_globals => $self->globals->map(sub { $_->[0] }),
     );
 }
 
 sub render {
     my ($self, $ctx, $comp, $args) = @_;
     my $output = '';
+
+    $self->interp->set_global(
+        $_->[0] => $_->[1]->($self, $ctx),
+    ) for @{ $self->globals };
 
     try {
         $self->interp->make_request(

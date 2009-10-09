@@ -7,6 +7,6 @@ use lib "$FindBin::Bin/lib";
 
 use Catalyst::Test 'TestApp';
 
-is(get('/'), "tiger\n");
+is(get('/'), "tiger\n" x 2);
 
 done_testing;
