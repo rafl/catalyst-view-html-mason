@@ -51,7 +51,6 @@ has always_append_template_extension => (
     my $glob_spec = subtype as Tuple[Str,CodeRef];
     coerce $glob_spec, from Str, via {
         my ( $type, $var ) = split( qr//, $_, 2 );
-        printf STDERR "Coercing $type, $var\n", ;
         my $fn   = {
            '$' => sub{ $_[0] },
            '@' => sub{ return unless defined $_[0]; @{$_[0]}},
