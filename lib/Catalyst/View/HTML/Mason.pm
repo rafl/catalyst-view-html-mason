@@ -112,7 +112,7 @@ sub process {
     $ctx->response->body($output);
 }
 
-sub get_component {
+sub _get_component {
     my ($self, $ctx) = @_;
 
     my $comp = $ctx->stash->{template};
