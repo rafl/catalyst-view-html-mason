@@ -112,8 +112,7 @@ sub _build_interp {
     unshift @{ $args{allow_globals}}, map{ $_->[0] } @{ $self->globals };
 
     my $v = Data::Visitor::Callback->new(
-        'Path::Class::File' => sub{ blessed $_ ? $_->stringify : $_ },
-        'Path::Class::Dir'  => sub{ blessed $_ ? $_->stringify : $_ },
+        'Path::Class::Entity' => sub{ blessed $_ ? $_->stringify : $_ },
     );
 
     return $self->interp_class->new( $v->visit( %args ) );
