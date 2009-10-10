@@ -14,6 +14,13 @@ sub index : Path Args(0) {
     $ctx->stash(affe => 'tiger');
 }
 
+sub path_class : Local Args(0) {
+    my ($self, $ctx) = @_;
+    $ctx->stash(affe => 'tiger');
+    $ctx->stash( template => 'index' );
+    $ctx->forward( 'View::PathClass' );
+}
+
 sub enc_utf8 : Local Args(0) {
     my ($self, $ctx) = @_;
     use utf8;

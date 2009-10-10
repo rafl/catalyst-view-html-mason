@@ -6,6 +6,7 @@ use MooseX::Types::Moose
     qw/ArrayRef HashRef ClassName Str Bool Object CodeRef/;
 use MooseX::Types::Structured qw/Tuple/;
 use Encode::Encoding;
+use Data::Visitor::Callback;
 
 use namespace::autoclean;
 
@@ -110,7 +111,12 @@ sub _build_interp {
     $args{allow_globals} ||= [];
     unshift @{ $args{allow_globals}}, map{ $_->[0] } @{ $self->globals };
 
-    return $self->interp_class->new( %args );
+    my $v = Data::Visitor::Callback->new(
+        'Path::Class::File' => sub{ blessed $_ ? $_->stringify : $_ },
+        'Path::Class::Dir'  => sub{ blessed $_ ? $_->stringify : $_ },
+    );
+
+    return $self->interp_class->new( $v->visit( %args ) );
 }
 
 sub render {
