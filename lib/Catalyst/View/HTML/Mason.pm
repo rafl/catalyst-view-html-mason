@@ -70,8 +70,14 @@ has always_append_template_extension => (
         my ( $type, $var ) = split( qr//, $_, 2 );
         my $fn   = {
            '$' => sub{ $_[0] },
-           '@' => sub{ return unless defined $_[0]; @{$_[0]}},
-           '%' => sub{ return unless defined $_[0]; %{$_[0]}},
+           '@' => sub{
+             return unless defined $_[0];
+             ref $_[0] eq 'ARRAY'? @{$_[0]}: !ref $_[0]? $_[0]: ();
+           },
+           '%' => sub{
+             return unless defined $_[0];
+             ref $_[0] eq 'HASH' ? %{$_[0]} : ();
+           },
         }->{ $type };
         [ $_ => sub{ $fn->( $_[1]->stash->{ $var })} ];
     };
@@ -111,6 +117,14 @@ sub _build_interp {
     $args{allow_globals} ||= [];
     unshift @{ $args{allow_globals}}, map{ $_->[0] } @{ $self->globals };
 
+    $args{in_package} ||= sprintf '%s::Commands', do{
+      if ( my $meta = Class::MOP::class_of( $self )) {
+        $meta->name;
+      } else {
+        ref $self;
+      }
+    } ;
+
     my $v = Data::Visitor::Callback->new(
         'Path::Class::Entity' => sub{ blessed $_ ? $_->stringify : $_ },
     );
@@ -122,11 +136,15 @@ sub render {
     my ($self, $ctx, $comp, $args) = @_;
     my $output = '';
 
-    # CAVEAT: a bug in HTML::Mason::Interp will lead to a crash
-    # in set globals when array or hash globals are empty
-    $self->interp->set_global(
-        $_->[0] => $_->[1]->($self, $ctx),
-    ) for @{ $self->globals };
+    for ( @{ $self->globals } ) {
+        my ( $decl, @values ) = ( $_->[0] => $_->[1]->($self, $ctx));
+        if ( @values ) {
+            $self->interp->set_global( $decl, @values );
+        } else {
+            # HTML::Mason::Interp->set_global would crash on empty lists
+            $self->_unset_interp_global( $decl );
+        }
+    }
 
     try {
         $self->interp->make_request(
@@ -191,6 +209,18 @@ sub load_component {
         if defined $method;
 
     return $component;
+}
+
+sub _unset_interp_global {
+    my ( $self, $decl ) = @_;
+    my ( $prefix, $name ) = split( qr//, $decl, 2 );
+    my $package = $self->interp->compiler->in_package;
+    my $varname = sprintf( "%s::%s", $package, $name );
+
+    no strict 'refs';
+    if    ($prefix eq '$') { $$varname = undef }
+    elsif ($prefix eq '@') { @$varname = () }
+    else                   { %$varname = () }
 }
 
 __PACKAGE__->meta->make_immutable;
