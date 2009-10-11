@@ -169,22 +169,6 @@ sub process {
     $ctx->response->body($output);
 }
 
-sub _get_component {
-    my ($self, $ctx) = @_;
-
-    my $comp = $ctx->stash->{template};
-    my $extension = $self->template_extension;
-
-    if (defined $comp) {
-        $comp .= $extension
-            if !ref $comp && $self->always_append_template_extension;
-
-        return $comp;
-    }
-
-    return $ctx->action->reverse . $extension;
-}
-
 sub fetch_comp {
     my ($self, $comp) = @_;
     my $method;
@@ -209,6 +193,23 @@ sub fetch_comp {
         if defined $method;
 
     return $component;
+}
+
+
+sub _get_component {
+    my ($self, $ctx) = @_;
+
+    my $comp = $ctx->stash->{template};
+    my $extension = $self->template_extension;
+
+    if (defined $comp) {
+        $comp .= $extension
+            if !ref $comp && $self->always_append_template_extension;
+
+        return $comp;
+    }
+
+    return $ctx->action->reverse . $extension;
 }
 
 sub _unset_interp_global {
