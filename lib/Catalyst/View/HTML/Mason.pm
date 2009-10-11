@@ -71,12 +71,12 @@ has always_append_template_extension => (
         my $fn   = {
            '$' => sub{ $_[0] },
            '@' => sub{
-             return unless defined $_[0];
-             ref $_[0] eq 'ARRAY'? @{$_[0]}: !ref $_[0]? $_[0]: ();
+               return unless defined $_[0];
+               ref $_[0] eq 'ARRAY'? @{$_[0]}: !ref $_[0]? $_[0]: ();
            },
            '%' => sub{
-             return unless defined $_[0];
-             ref $_[0] eq 'HASH' ? %{$_[0]} : ();
+               return unless defined $_[0];
+               ref $_[0] eq 'HASH' ? %{$_[0]} : ();
            },
         }->{ $type };
         [ $_ => sub{ $fn->( $_[1]->stash->{ $var })} ];
@@ -118,11 +118,11 @@ sub _build_interp {
     unshift @{ $args{allow_globals}}, map{ $_->[0] } @{ $self->globals };
 
     $args{in_package} ||= sprintf '%s::Commands', do{
-      if ( my $meta = Class::MOP::class_of( $self )) {
-        $meta->name;
-      } else {
-        ref $self;
-      }
+        if ( my $meta = Class::MOP::class_of( $self )) {
+            $meta->name;
+        } else {
+            ref $self;
+        }
     } ;
 
     my $v = Data::Visitor::Callback->new(
