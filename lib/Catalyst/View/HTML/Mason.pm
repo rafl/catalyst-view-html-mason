@@ -148,7 +148,7 @@ sub render {
 
     try {
         $self->interp->make_request(
-            comp => $self->load_component($comp),
+            comp => $self->fetch_comp($comp),
             args => [$args ? %{ $args } : %{ $ctx->stash }],
             out_method => \$output,
         )->exec;
@@ -185,7 +185,7 @@ sub _get_component {
     return $ctx->action->reverse . $extension;
 }
 
-sub load_component {
+sub fetch_comp {
     my ($self, $comp) = @_;
     my $method;
 
