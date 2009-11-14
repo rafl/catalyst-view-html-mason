@@ -1,4 +1,5 @@
 package Catalyst::View::HTML::Mason;
+# ABSTRACT: HTML::Mason rendering for Catalyst
 
 use Moose;
 use Try::Tiny;
