@@ -11,7 +11,7 @@ __PACKAGE__->config(
         ['$ctx' => sub { $_[1] }],
     ],
     interp_args => {
-        comp_root => TestApp->path_to('root')->stringify,
+        comp_root => TestApp->path_to('root'),
     },
 );
 
