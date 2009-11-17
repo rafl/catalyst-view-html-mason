@@ -1,1 +1,4 @@
 /.PerlySenseProject/project.yml
+/.build/
+/Catalyst-View-HTML-Mason-*.tar.gz
+/Catalyst-View-HTML-Mason-*/
