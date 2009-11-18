@@ -1,0 +1,2 @@
+<% $m->one %> + <% $m->two %> = 3\
+<%perl> return; </%perl>

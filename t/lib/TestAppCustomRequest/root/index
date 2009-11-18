@@ -1,0 +1,2 @@
+<% $affe %>
+<% $m->catalyst_ctx->stash->{affe} %>

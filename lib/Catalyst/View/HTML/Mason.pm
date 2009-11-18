@@ -13,6 +13,7 @@ use Data::Visitor::Callback;
 use namespace::autoclean;
 
 extends 'Catalyst::View';
+with 'Catalyst::Component::ApplicationAttribute';
 
 =head1 SYNOPSIS
 
@@ -89,28 +90,30 @@ hash reference.
 
 =attr request_class
 
-The class the C<interp> instance is constructed from. Defaults to
-C<HTML::Mason::Request::Catalyst>.
+The class to use as a custom request class for Mason. In conjunction
+with C<request_class_roles> and L<HTML::Mason::Request::Catalyst> this
+can be used as shortcut for manually constructing L<HTML::Mason::Request>
+subclasses and avoid common pitfalls when moosifing the request.
 
 =cut
 
     has request_class => (
-        is      => 'ro',
-        isa     => $tc,
-        coerce  => 1,
-        builder => '_build_request_class',
+        is        => 'ro',
+        isa       => $tc,
+        coerce    => 1,
+        predicate => 'has_custom_request_class'
     );
 
-=attr request_class_traits
+=attr request_class_roles
 
-Traits that are automattically applied to the request class
+Array ref of roles that are automattically applied to the request class
 
 =cut
 
-    has request_class_traits => (
+    has request_class_roles => (
         is      => 'ro',
         isa     => ArrayRef,
-        default => sub{ +[] }
+        predicate => 'has_request_class_roles'
     );
 
 }
@@ -201,6 +204,20 @@ FIXME
     );
 }
 
+around BUILDARGS => sub {
+  my $orig = shift;
+  my $class = shift;
+  my %p = @_ == 1 && ref $_[0] eq 'HASH' ? %{$_[0]} : @_;
+
+  return $class->$orig( %p ) unless exists $p{interp_args};
+
+  die "Can't specify request_class in both main config and interp_args"
+    if exists $p{request_class} and exists $p{interp_args}{request_class};
+
+  return $class->$orig( %p );
+};
+
+
 sub BUILD {
     my ($self) = @_;
     $self->interp;
@@ -208,9 +225,42 @@ sub BUILD {
 
 sub _build_globals { [] }
 
-sub _build_request_class { 'HTML::Mason::Request::Catalyst' }
+sub _build_request_class { 'HTML::Mason::Request' }
 
 sub _build_interp_class { 'HTML::Mason::Interp' }
+
+sub _create_request_class_impl {
+    my ($self) = @_;
+
+    if ( not $self->has_custom_request_class ) {
+        $self->_application->log->warn(
+            "Can't apply roles to the default request class"
+        ) if $self->has_request_class_roles;
+
+        return 'HTML::Mason::Request';
+    }
+
+    if ( $self->has_request_class_roles ) {
+        my $meta = Moose::Meta::Class->create_anon_class(
+            superclasses => [ $self->request_class ],
+            roles        => $self->request_class_roles,
+        );
+
+        # make anon class persistent and immutable
+        $meta->add_method( meta => sub{ $meta });
+        $meta->make_immutable;
+
+        return $meta->name;
+    }
+
+    if ( my $meta = Class::MOP::class_of( $self->request_class )) {
+        $self->_application->log->warn(
+            $meta->name . " should be immutable or rendering might break"
+        ) if $meta->is_mutable;
+    }
+
+    return $self->request_class;
+}
 
 sub _build_interp {
     my ($self) = @_;
@@ -227,13 +277,7 @@ sub _build_interp {
     $args{allow_globals} ||= [];
     unshift @{ $args{allow_globals}}, map { $_->[0] } @{ $self->globals };
 
-    die "Param 'request_class' found in interp_args, use view config instead"
-      if $args{request_class};
-
-    $self->apply_request_class_roles(@{ $self->request_class_traits })
-      if @{ $self->request_class_traits };
-
-    $args{request_class} = $self->request_class;
+    $args{request_class} ||= $self->_create_request_class_impl;
 
     $args{in_package} ||= sprintf '%s::Commands', do {
         if (my $meta = Class::MOP::class_of($self)) {
@@ -241,7 +285,7 @@ sub _build_interp {
         } else {
             ref $self;
         }
-    } ;
+    };
 
     my $v = Data::Visitor::Callback->new(
         'Path::Class::Entity' => sub { blessed $_ ? $_->stringify : $_ },
@@ -265,20 +309,20 @@ sub render {
     }
 
     try {
-
-        my %request_args = (
+        my %req_args = (
           comp => $self->fetch_comp($comp),
           args => [$args ? %{ $args } : %{ $ctx->stash }],
           out_method => \$output,
         );
 
-        # push catalyst context on arg stash if the standard interface
-        # is supported
-        $request_args{catalyst_ctx} = $ctx
-            if Class::MOP::class_of( $self->request_class )
-                ->does_role( 'MasonX::TraitFor::Request::Catalyst::Context' );
+        my $req_meta = Class::MOP::class_of( $self->request_class );
 
-        $self->interp->make_request( %request_args )->exec;
+        # push catalyst context on arg stash if the standard
+        # interface is supported
+        $req_args{catalyst_ctx} = $ctx if $req_meta and $req_meta
+          ->does_role( 'MasonX::TraitFor::Request::Catalyst::Context' );
+
+        $self->interp->make_request( %req_args )->exec;
     }
     catch {
         confess $_;
@@ -289,10 +333,8 @@ sub render {
 
 sub process {
     my ($self, $ctx) = @_;
-
     my $comp   = $self->_get_component($ctx);
     my $output = $self->render($ctx, $comp);
-
     $ctx->response->body($output);
 }
 
@@ -350,8 +392,6 @@ sub _unset_interp_global {
     elsif ($prefix eq '@') { @$varname = () }
     else                   { %$varname = () }
 }
-
-with 'MooseX::RelatedClassRoles' => { name => 'request' };
 
 __PACKAGE__->meta->make_immutable;
 
