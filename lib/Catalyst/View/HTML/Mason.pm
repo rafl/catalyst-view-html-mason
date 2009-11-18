@@ -3,7 +3,9 @@ package Catalyst::View::HTML::Mason;
 
 use Moose;
 use Try::Tiny;
-use MooseX::Types::Moose qw/ArrayRef HashRef ClassName Str Bool Object CodeRef/;
+use MooseX::Types::Moose
+    qw/ArrayRef HashRef ClassName Str Bool Object CodeRef/;
+
 use MooseX::Types::Structured qw/Tuple/;
 use Encode::Encoding;
 use Data::Visitor::Callback;
@@ -70,7 +72,6 @@ C<HTML::Mason::Interp>.
         coerce  => 1,
         builder => '_build_interp_class',
     );
-}
 
 =attr interp_args
 
@@ -79,11 +80,40 @@ hash reference.
 
 =cut
 
-has interp_args => (
-    is      => 'ro',
-    isa     => HashRef,
-    default => sub { +{} },
-);
+    has interp_args => (
+        is      => 'ro',
+        isa     => HashRef,
+        default => sub { +{} },
+    );
+
+
+=attr request_class
+
+The class the C<interp> instance is constructed from. Defaults to
+C<HTML::Mason::Request::Catalyst>.
+
+=cut
+
+    has request_class => (
+        is      => 'ro',
+        isa     => $tc,
+        coerce  => 1,
+        builder => '_build_request_class',
+    );
+
+=attr request_class_traits
+
+Traits that are automattically applied to the request class
+
+=cut
+
+    has request_class_traits => (
+        is      => 'ro',
+        isa     => ArrayRef,
+        default => sub{ +[] }
+    );
+
+}
 
 =attr template_extension
 
@@ -161,7 +191,7 @@ FIXME
     };
 
     my $tc = subtype as ArrayRef[$glob_spec];
-    coerce $tc, from ArrayRef, via { [map { $glob_spec->coerce($_) } @{ $_ } ]};
+    coerce $tc, from ArrayRef, via { [map { $glob_spec->coerce($_) } @$_ ]};
 
     has globals => (
         is      => 'ro',
@@ -177,6 +207,8 @@ sub BUILD {
 }
 
 sub _build_globals { [] }
+
+sub _build_request_class { 'HTML::Mason::Request::Catalyst' }
 
 sub _build_interp_class { 'HTML::Mason::Interp' }
 
@@ -194,6 +226,14 @@ sub _build_interp {
 
     $args{allow_globals} ||= [];
     unshift @{ $args{allow_globals}}, map { $_->[0] } @{ $self->globals };
+
+    die "Param 'request_class' found in interp_args, use view config instead"
+      if $args{request_class};
+
+    $self->apply_request_class_roles(@{ $self->request_class_traits })
+      if @{ $self->request_class_traits };
+
+    $args{request_class} = $self->request_class;
 
     $args{in_package} ||= sprintf '%s::Commands', do {
         if (my $meta = Class::MOP::class_of($self)) {
@@ -225,11 +265,20 @@ sub render {
     }
 
     try {
-        $self->interp->make_request(
-            comp => $self->fetch_comp($comp),
-            args => [$args ? %{ $args } : %{ $ctx->stash }],
-            out_method => \$output,
-        )->exec;
+
+        my %request_args = (
+          comp => $self->fetch_comp($comp),
+          args => [$args ? %{ $args } : %{ $ctx->stash }],
+          out_method => \$output,
+        );
+
+        # push catalyst context on arg stash if the standard interface
+        # is supported
+        $request_args{catalyst_ctx} = $ctx
+            if Class::MOP::class_of( $self->request_class )
+                ->does_role( 'MasonX::TraitFor::Request::Catalyst::Context' );
+
+        $self->interp->make_request( %request_args )->exec;
     }
     catch {
         confess $_;
@@ -301,6 +350,8 @@ sub _unset_interp_global {
     elsif ($prefix eq '@') { @$varname = () }
     else                   { %$varname = () }
 }
+
+with 'MooseX::RelatedClassRoles' => { name => 'request' };
 
 __PACKAGE__->meta->make_immutable;
 
