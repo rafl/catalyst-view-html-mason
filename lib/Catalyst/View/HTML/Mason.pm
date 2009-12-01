@@ -315,12 +315,11 @@ sub render {
           out_method => \$output,
         );
 
-        my $req_meta = Class::MOP::class_of( $self->request_class );
-
-        # push catalyst context on arg stash if the standard
-        # interface is supported
-        $req_args{catalyst_ctx} = $ctx if $req_meta and $req_meta
-          ->does_role( 'MasonX::TraitFor::Request::Catalyst::Context' );
+        if ( my $meta = eval{ Class::MOP::class_of( $self->request_class )}) {
+          # add context to args if the standard interface is supported
+          $req_args{catalyst_ctx} = $ctx
+            if $req_meta->does_role( 'MasonX::RequestContext::Catalyst' );
+        }
 
         $self->interp->make_request( %req_args )->exec;
     }
