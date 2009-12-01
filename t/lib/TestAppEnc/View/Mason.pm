@@ -11,9 +11,6 @@ __PACKAGE__->config(
         ['$ctx' => sub { $_[1] }],
     ],
     encoding => 'UTF-8',
-    interp_args => {
-        comp_root => TestAppEnc->path_to('root')->stringify,
-    },
 );
 
 __PACKAGE__->meta->make_immutable;

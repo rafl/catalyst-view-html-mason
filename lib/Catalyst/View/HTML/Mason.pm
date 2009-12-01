@@ -274,6 +274,8 @@ sub _build_interp {
         };
     }
 
+    $args{comp_root} ||= $self->_application->path_to( 'root' );
+
     $args{allow_globals} ||= [];
     unshift @{ $args{allow_globals}}, map { $_->[0] } @{ $self->globals };
 

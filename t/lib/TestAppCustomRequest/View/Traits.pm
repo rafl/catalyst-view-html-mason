@@ -15,7 +15,6 @@ __PACKAGE__->config(
     interp_args => {
         code_cache_max_size => 0,
         use_object_files => 0,
-        comp_root => TestAppCustomRequest->path_to('root'),
     },
 );
 

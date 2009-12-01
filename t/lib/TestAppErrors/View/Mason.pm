@@ -10,9 +10,6 @@ __PACKAGE__->config(
         '$affe',
         ['$ctx' => sub { $_[1] }],
     ],
-    interp_args => {
-        comp_root => TestAppErrors->path_to('root')->stringify,
-    },
 );
 
 __PACKAGE__->meta->make_immutable;
