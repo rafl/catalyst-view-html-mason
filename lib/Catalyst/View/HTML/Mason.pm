@@ -320,7 +320,7 @@ sub render {
         if ( my $meta = eval{ Class::MOP::class_of( $self->request_class )}) {
           # add context to args if the standard interface is supported
           $req_args{catalyst_ctx} = $ctx
-            if $req_meta->does_role( 'MasonX::RequestContext::Catalyst' );
+            if $meta->does_role( 'MasonX::RequestContext::Catalyst' );
         }
 
         $self->interp->make_request( %req_args )->exec;
