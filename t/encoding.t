@@ -34,6 +34,10 @@ BEGIN {
   is $utf8, 'Er flüsterte: Ich darf auf den großen Platz fahren.',
     'Correct byte string with encoding and Unicode::Encoding plugin';
 
+  my $meths = get('/enc_methods');
+  $meths =~ s/[\s\t\n\r]//g;
+  is $meths, ( 'Äffchen' x 6 ),
+    'Correct byte string from method calls';
 }
 
 done_testing;

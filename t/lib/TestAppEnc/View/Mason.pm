@@ -10,7 +10,7 @@ __PACKAGE__->config(
         '$affe',
         ['$ctx' => sub { $_[1] }],
     ],
-    encoding => 'UTF-8',
+    encoding => 'utf8',
 );
 
 __PACKAGE__->meta->make_immutable;

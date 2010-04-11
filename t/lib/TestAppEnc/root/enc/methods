@@ -1,0 +1,11 @@
+<%def echo>
+<%args> $msg </%args>
+<% $msg %>
+</%def>
+
+Äffchen <& echo, msg => 'Äffchen' &>
+<% $msg %> <& echo, msg => $msg &>
+<% $by_ctrl %> <& echo, msg => $by_ctrl &>
+
+<%init> my $msg = 'Äffchen'; </%init>
+<%args> $by_ctrl </%args>
