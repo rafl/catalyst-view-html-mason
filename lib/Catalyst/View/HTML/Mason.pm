@@ -114,7 +114,13 @@ has always_append_template_extension => (
 
 =attr encoding
 
-FIXME
+Automatically decode the text parts of Mason templates using the
+given encoding or L<Encode::Encoding> object. As a special case,
+an C<utf8> encoding will lead to component objects with L<utf8>
+enabled instead of just decoding the text parts (i.e. literals in
+code parts are also decoded). If you don't want to do this for
+whatever reason, you can still fall back to using a 'UTF-8'
+encoding instead.
 
 =cut
 
@@ -185,11 +191,18 @@ sub _build_interp {
 
     my %args = %{ $self->interp_args };
     if ($self->has_encoding) {
-        my $old_func = delete $args{postprocess_text};
-        $args{postprocess_text} = sub {
-            $old_func->($_[0]) if $old_func;
-            ${ $_[0] } = $self->encoding->decode(${ $_[0] });
-        };
+        if ( $self->encoding->name eq 'utf8' ) {
+            # special case for full utf8 support
+            $args{preamble} = 'use utf8;' . ( $args{preamble} || '' );
+        } else {
+            # all other encodings have no generic way to deal with source code
+            # literals, so just decode text parts of the template
+            my $old_func = delete $args{postprocess_text};
+            $args{postprocess_text} = sub {
+                $old_func->($_[0]) if $old_func;
+                ${ $_[0] } = $self->encoding->decode(${ $_[0] });
+            };
+        }
     }
 
     $args{allow_globals} ||= [];

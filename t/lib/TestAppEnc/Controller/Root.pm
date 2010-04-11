@@ -20,6 +20,12 @@ sub enc_utf8 : Local Args(0) {
     $ctx->stash( template => 'enc/utf8', verb => 'flüsterte' );
 }
 
+sub enc_methods : Local Args(0) {
+    my ($self, $ctx) = @_;
+    use utf8;
+    $ctx->stash( template => 'enc/methods', by_ctrl => 'Äffchen' );
+}
+
 sub end : ActionClass('RenderView') {}
 
 __PACKAGE__->meta->make_immutable;
