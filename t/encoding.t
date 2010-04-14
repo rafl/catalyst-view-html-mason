@@ -13,6 +13,7 @@ BEGIN {
   }
 }
 
+
 {
   package without_encoding;
 
@@ -36,8 +37,10 @@ BEGIN {
 
   my $meths = get('/enc_methods');
   $meths =~ s/[\s\t\n\r]//g;
-  is $meths, ( 'Äffchen' x 6 ),
+  is $meths, ( 'Äffchen' x 8 ),
     'Correct byte string from method calls';
+
+  note( TestAppEnc->view->fetch_comp('enc/methods')->object_file );
 }
 
 done_testing;

@@ -275,13 +275,17 @@ sub _build_interp {
     if ($self->has_encoding) {
         if ( $self->encoding->name eq 'utf8' ) {
             # special case for full utf8 support
-            $args{preamble} = 'use utf8;' . ( $args{preamble} || '' );
+            my $old_func = delete $args{preprocess};
+            $args{preprocess} = sub{
+              ${ $_[0] } = '<%once>use utf8;</%once>' . ${ $_[0] };
+              $old_func->( $_[0] ) if $old_func;
+            };
         } else {
             # all other encodings have no generic way to deal with source code
             # literals, so just decode text parts of the template
             my $old_func = delete $args{postprocess_text};
             $args{postprocess_text} = sub {
-                $old_func->($_[0]) if $old_func;
+                $old_func->( $_[0] ) if $old_func;
                 ${ $_[0] } = $self->encoding->decode(${ $_[0] });
             };
         }
