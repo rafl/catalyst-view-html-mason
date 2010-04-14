@@ -1,3 +1,5 @@
+<%attr> by_args => 'Äffchen' </%attr>
+
 <%def echo>
 <%args> $msg </%args>
 <% $msg %>
@@ -6,6 +8,8 @@
 Äffchen <& echo, msg => 'Äffchen' &>
 <% $msg %> <& echo, msg => $msg &>
 <% $by_ctrl %> <& echo, msg => $by_ctrl &>
+<% $m->request_comp->attr('by_args') %>
+<& echo, msg => $m->request_comp->attr('by_args') &>
 
 <%init> my $msg = 'Äffchen'; </%init>
 <%args> $by_ctrl </%args>
