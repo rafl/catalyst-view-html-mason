@@ -19,7 +19,7 @@ is(get('/globals'),'Globals:grau,foo,bar,chef,ich', 'Multiple globals');
   $SIG{__WARN__} = sub{ push @warnings, @_ };
   is(get('/no_globals'),'Globals:', 'Multiple globals');
   is(scalar @warnings, 1, 'One warning issued for undef scalar');
-  like($warnings[0], qr/uninitialized value.*maus/, 'Correct warning issued');
+  like($warnings[0], qr/uninitialized value/, 'Correct warning issued');
 }
 
 like(
