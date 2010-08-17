@@ -114,7 +114,10 @@ has always_append_template_extension => (
 
 =attr encoding
 
-FIXME
+Encode Mason output with the given encoding.  Can be a string encoding
+name (which will be resolved using Encode::find_encoding()), or an
+Encode::Encoding object.  See L<Encode::Supported> for a list of
+encodings.
 
 =cut
 
