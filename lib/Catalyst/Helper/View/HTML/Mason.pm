@@ -50,7 +50,7 @@ __DATA__
 __compclass__
 package [% class %];
 use Moose;
-BEGIN{ extends 'Catalyst::View::HTML::Mason' }
+extends 'Catalyst::View::HTML::Mason';
 
 ## uncomment below to pass default configuration options to this view
 # __PACKAGE__->config( );
