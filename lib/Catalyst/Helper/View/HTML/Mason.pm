@@ -12,7 +12,7 @@ L<Catalyst::View::HTML::Mason> views
 
 =head1 SYNOPSIS
 
-    script/create.pl view HTML::Mason Mason
+    script/create.pl view Mason HTML::Mason
 
 =head2 METHODS
 
