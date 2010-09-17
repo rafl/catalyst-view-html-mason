@@ -227,6 +227,15 @@ sub _build_interp {
     return $self->interp_class->new( $v->visit(%args) );
 }
 
+=method render($ctx, $component, \%args)
+
+Renders the given component and returns its output.
+
+A hash of template variables may be provided in C<$args>. If C<$args> isn't
+given, template variables will be taken from C<< $ctx->stash >>.
+
+=cut
+
 sub render {
     my ($self, $ctx, $comp, $args) = @_;
     my $output = '';
