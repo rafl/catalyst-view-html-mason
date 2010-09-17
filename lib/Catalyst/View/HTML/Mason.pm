@@ -38,6 +38,12 @@ It's basically a rewrite of L<Catalyst::View::Mason|Catalyst::View::Mason>,
 which became increasingly hard to maintain over time, while keeping backward
 compatibility.
 
+=head1 A NOTE ABOUT DHANDLERS
+
+Note that this view does not support automatic dispatching to Mason
+dhandlers.  Dhandlers can still be used, but they must be referred to
+explicitly like any other component.
+
 =attr interp
 
 The mason interpreter instance responsible for rendering templates.
