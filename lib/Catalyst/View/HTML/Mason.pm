@@ -233,6 +233,15 @@ sub _build_interp {
     return $self->interp_class->new( $v->visit(%args) );
 }
 
+=method render($ctx, $component, \%args)
+
+Renders the given component and returns its output.
+
+A hash of template variables may be provided in C<$args>. If C<$args> isn't
+given, template variables will be taken from C<< $ctx->stash >>.
+
+=cut
+
 sub render {
     my ($self, $ctx, $comp, $args) = @_;
     my $output = '';
@@ -249,7 +258,7 @@ sub render {
 
     try {
         $self->interp->make_request(
-            comp => $self->fetch_comp($comp),
+            comp => $self->_fetch_comp($comp),
             args => [$args ? %{ $args } : %{ $ctx->stash }],
             out_method => \$output,
         )->exec;
@@ -270,7 +279,7 @@ sub process {
     $ctx->response->body($output);
 }
 
-sub fetch_comp {
+sub _fetch_comp {
     my ($self, $comp) = @_;
     my $method;
 
@@ -328,3 +337,9 @@ sub _unset_interp_global {
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+=begin Pod::Coverage
+
+BUILD
+
+=end Pod::Coverage
