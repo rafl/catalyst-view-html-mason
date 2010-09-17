@@ -1,22 +1,14 @@
 package Catalyst::Helper::View::HTML::Mason;
+# ABSTRACT: Helper for L<Catalyst::View::HTML::Mason> views
 
 use strict;
 use warnings;
-
-our $VERSION = '0.01';
-
-=head1 NAME
-
-Catalyst::Helper::View::HTML::Mason - Helper for
-L<Catalyst::View::HTML::Mason> views
 
 =head1 SYNOPSIS
 
     script/create.pl view Mason HTML::Mason
 
-=head2 METHODS
-
-=head3 mk_compclass
+=method mk_compclass
 
 =cut
 
@@ -32,19 +24,11 @@ L<Catalyst::View::HTML::Mason>, L<Catalyst::Manual>,
 L<Catalyst::Test>, L<Catalyst::Request>, L<Catalyst::Response>,
 L<Catalyst::Helper>
 
-=head1 AUTHOR
-
-Robert Buels <rbuels@cpan.org>
-
-=head1 LICENSE
-
-This library is free software . You can redistribute it and/or modify
-it under the same terms as perl itself.
-
 =cut
 
 1;
 
+__END__
 __DATA__
 
 __compclass__
