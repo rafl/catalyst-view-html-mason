@@ -21,9 +21,7 @@ sub mk_compclass {
 
 =head1 SEE ALSO
 
-L<Catalyst::View::HTML::Mason>, L<Catalyst::Manual>,
-L<Catalyst::Test>, L<Catalyst::Request>, L<Catalyst::Response>,
-L<Catalyst::Helper>
+L<Catalyst::View::HTML::Mason>, L<Catalyst::Helper>
 
 =cut
 
