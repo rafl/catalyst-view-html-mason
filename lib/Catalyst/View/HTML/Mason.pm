@@ -252,7 +252,7 @@ sub render {
 
     try {
         $self->interp->make_request(
-            comp => $self->fetch_comp($comp),
+            comp => $self->_fetch_comp($comp),
             args => [$args ? %{ $args } : %{ $ctx->stash }],
             out_method => \$output,
         )->exec;
@@ -273,7 +273,7 @@ sub process {
     $ctx->response->body($output);
 }
 
-sub fetch_comp {
+sub _fetch_comp {
     my ($self, $comp) = @_;
     my $method;
 
