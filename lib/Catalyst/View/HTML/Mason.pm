@@ -331,3 +331,9 @@ sub _unset_interp_global {
 __PACKAGE__->meta->make_immutable;
 
 1;
+
+=begin Pod::Coverage
+
+BUILD
+
+=end Pod::Coverage
