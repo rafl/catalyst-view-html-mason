@@ -3,6 +3,8 @@ Revision history for {{$dist->name}}
 {{$NEXT}}
 
  * Fixed helper class (rbuels)
+ * Added docs for render method (rafl)
+ * Miscellaneous doc cleanup (rafl)
 
 0.02     Aug 20, 2010
 
