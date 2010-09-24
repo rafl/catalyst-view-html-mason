@@ -27,7 +27,6 @@ L<Catalyst::View::HTML::Mason>, L<Catalyst::Helper>
 
 1;
 
-__END__
 __DATA__
   package [% class %];
   use Moose;
