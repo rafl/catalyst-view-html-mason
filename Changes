@@ -1,0 +1,14 @@
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
+
+ * Fixed helper class (rbuels)
+
+0.02     Aug 20, 2010
+
+ * Added missing dep on Catalyst::Action::RenderView (rbuels)
+
+0.01     Aug 18, 2010
+
+ * First version, released on an unsuspecting world (rafl)
+
