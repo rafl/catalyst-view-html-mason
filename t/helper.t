@@ -23,7 +23,8 @@ my ($stdout, $stderr) = capture {
     system $^X, $create_script, 'view', 'Noggin', 'HTML::Mason';
 };
 
-my $view_code = $d->subdir(qw( lib Foo View ))->file('Noggin.pm')->slurp;
+my $view_code = eval{ $d->subdir(qw( lib Foo View ))->file('Noggin.pm')->slurp };
+diag $@ if $@;
 
 like( $view_code, qr/package \s* Foo::View::Noggin/x );
 like( $view_code, qr/extends \s* ['"]Catalyst::View::HTML::Mason['"]/x );
