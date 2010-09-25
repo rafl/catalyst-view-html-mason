@@ -2,6 +2,8 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+ * add missing build dep on Catalyst::Helper
+
 0.10      2010-09-23 18:27:39 PST8PDT
 
  * Fixed helper class (rbuels)
