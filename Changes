@@ -2,6 +2,8 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+ * fixed handling of globals attr when it is just a single string
+
 0.11      2010-09-24 19:39:49 PST8PDT
 
  * add missing build dep on Catalyst::Helper
