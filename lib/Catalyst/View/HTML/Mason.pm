@@ -185,6 +185,7 @@ in the root controller.
 
     my $tc = subtype as ArrayRef[$glob_spec];
     coerce $tc, from ArrayRef, via { [map { $glob_spec->coerce($_) } @{ $_ } ]};
+    coerce $tc, from Str, via { [ $glob_spec->coerce( $_ ) ] };
 
     has globals => (
         is      => 'ro',
