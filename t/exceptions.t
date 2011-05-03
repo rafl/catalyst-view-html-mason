@@ -10,8 +10,15 @@ use Catalyst::Test 'TestAppErrors';
 
 is(get('/'), "tiger\n" x 2, 'Basic rendering' );
 
-dies_ok {
-  get('/invalid_template');
-} 'Rendering nonexistent template dies as expected';
+if ( $Catalyst::VERSION >= 5.89000 ) {
+  my $res = request('/invalid_template');
+  ok( ! $res->is_success, 'got a 500 when rendering nonexistent template' );
+  like( $res->content, qr/Can't find component/, 'got expected error in body' );
+}
+else {
+  dies_ok {
+    get('/invalid_template');
+  } 'Rendering nonexistent template dies as expected';
+}
 
 done_testing;
