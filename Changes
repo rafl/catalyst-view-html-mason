@@ -2,6 +2,9 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+ * Bump dependencies on Capture::Tiny and Catalyst::Helper to 0.10 and 1.33,
+   respectively. This fixes occasional failures in t/helper.t.
+
 0.17      2011-05-15 12:48:31 Europe/Berlin
 
  * Better documentation for the globals attribute.
