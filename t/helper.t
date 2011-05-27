@@ -5,7 +5,7 @@ use File::Temp;
 use Test::More;
 
 use Path::Class;
-use Capture::Tiny 'capture';
+use Capture::Tiny 0.10 'capture';
 
 use_ok('Catalyst::Helper::View::HTML::Mason');
 
