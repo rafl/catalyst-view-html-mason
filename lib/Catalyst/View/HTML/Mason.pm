@@ -7,6 +7,7 @@ use MooseX::Types::Moose qw/ArrayRef HashRef ClassName Str Bool Object CodeRef/;
 use MooseX::Types::Structured qw/Tuple/;
 use Encode::Encoding;
 use Data::Visitor::Callback;
+use Class::Load;
 
 use namespace::autoclean;
 
@@ -68,7 +69,7 @@ C<HTML::Mason::Interp>.
     use Moose::Util::TypeConstraints;
 
     my $tc = subtype as ClassName;
-    coerce $tc, from Str, via { Class::MOP::load_class($_); $_ };
+    coerce $tc, from Str, via { Class::Load::load_class($_); $_ };
 
     has interp_class => (
         is      => 'ro',
