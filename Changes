@@ -2,6 +2,10 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+0.19      2013-01-23 16:30:30 Europe/Helsinki
+
+ * Class::MOP::load_class is deprecated in Moose 2.1100, use Class::Load. (okko)
+
 0.18      2011-05-27 08:57:34 Europe/Berlin
 
  * Bump dependencies on Capture::Tiny and Catalyst::Helper to 0.10 and 1.33,
